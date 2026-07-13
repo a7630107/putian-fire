@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>普天消防工具箱</title>
+<style>
+  :root {
+    /* 消防主题色板：红 → 橙 火焰系 */
+    --c-fire-50:  #fff1f0;
+    --c-fire-100: #ffe0db;
+    --c-fire-300: #ff9285;
+    --c-fire-500: #ef4444;
+    --c-fire-600: #dc2626;
+    --c-fire-700: #b91c1c;
+    --c-flame:    #f97316;
+
+    --c-ink:      #1f2937;
+    --c-ink-soft: #6b7280;
+    --c-line:     #f1d9d4;
+    --c-bg:       #fdf7f5;
+    --c-card:     #ffffff;
+
+    --shadow-sm: 0 1px 2px rgba(185,28,28,.06);
+    --shadow-md: 0 8px 20px rgba(185,28,28,.10);
+    --shadow-lg: 0 18px 40px rgba(185,28,28,.16);
+
+    --radius: 18px;
+    --ease: 260ms cubic-bezier(.16,1,.3,1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    color: var(--c-ink);
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgba(249,115,22,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 0%, rgba(239,68,68,.10), transparent 55%),
+      var(--c-bg);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ===== 顶部英雄区 ===== */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-fire-700) 0%, var(--c-fire-500) 55%, var(--c-flame) 100%);
+    color: #fff;
+    padding: 48px 24px 64px;
+    overflow: hidden;
+  }
+  .hero::after {
+    content:"";
+    position:absolute; inset:0;
+    background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1px);
+    background-size: 22px 22px;
+    opacity:.4; pointer-events:none;
+  }
+  .hero-inner {
+    position: relative; z-index:1;
+    max-width: 1040px; margin: 0 auto;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .logo {
+    width: 64px; height: 64px; flex: 0 0 auto;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,.25));
+  }
+  .hero-text h1 {
+    font-size: 30px; font-weight: 800; letter-spacing: 2px;
+  }
+  .hero-text p {
+    font-size: 15px; opacity: .92; margin-top: 4px; letter-spacing: 1px;
+  }
+  .clock {
+    margin-left: auto; text-align: right;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 14px; padding: 10px 16px;
+    backdrop-filter: blur(6px);
+  }
+  .clock .date { font-size: 14px; opacity: .95; }
+  .clock .time {
+    font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+  }
+  .clock .dot { color: var(--c-fire-100); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+
+  /* ===== 主体 ===== */
+  .wrap { max-width: 1040px; margin: -32px auto 0; padding: 0 24px 56px; position: relative; z-index: 2; }
+  .section-head {
+    display:flex; align-items: baseline; gap: 12px; margin: 8px 4px 20px;
+  }
+  .section-head h2 { font-size: 19px; font-weight: 700; color: var(--c-fire-700); }
+  .section-head span { font-size: 13px; color: var(--c-ink-soft); }
+
+  .grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  .card {
+    background: var(--c-card);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column;
+    transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease);
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background: linear-gradient(var(--c-fire-500), var(--c-flame));
+    opacity: 0; transition: opacity var(--ease);
+  }
+  .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--c-fire-300); }
+  .card:hover::before { opacity: 1; }
+
+  .card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .badge-ic {
+    width: 50px; height: 50px; flex: 0 0 auto;
+    display: grid; place-items: center;
+    font-size: 26px;
+    background: linear-gradient(135deg, var(--c-fire-50), #fff);
+    border: 1px solid var(--c-line);
+    border-radius: 14px;
+  }
+  .card h3 { font-size: 18px; font-weight: 700; }
+  .tag {
+    display:inline-block; margin-top: 4px;
+    font-size: 12px; color: var(--c-fire-700);
+    background: var(--c-fire-50); border: 1px solid var(--c-line);
+    padding: 1px 9px; border-radius: 999px;
+  }
+  .card p { color: var(--c-ink-soft); font-size: 14px; margin-bottom: 18px; flex: 1; }
+  .open {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 6px;
+    text-decoration: none;
+    color: #fff; font-weight: 600; font-size: 14px;
+    background: linear-gradient(135deg, var(--c-fire-600), var(--c-flame));
+    padding: 10px 18px; border-radius: 12px;
+    transition: transform var(--ease), box-shadow var(--ease);
+    box-shadow: var(--shadow-sm);
+  }
+  .open:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .open::after { content: "→"; transition: transform var(--ease); }
+  .open:hover::after { transform: translateX(3px); }
+
+  .empty-hint {
+    grid-column: 1 / -1;
+    text-align:center; color: var(--c-ink-soft);
+    border: 1px dashed var(--c-line); border-radius: var(--radius);
+    padding: 28px; font-size: 14px;
+  }
+
+  footer {
+    text-align: center; color: var(--c-ink-soft);
+    font-size: 13px; padding: 8px 24px 40px;
+  }
+  footer b { color: var(--c-fire-600); }
+
+  @media (max-width: 560px) {
+    .hero-text h1 { font-size: 24px; }
+    .clock { margin-left: 0; width: 100%; text-align: left; }
+    .hero-inner { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#fff7ed"/>
+            <stop offset=".5" stop-color="#fbbf24"/>
+            <stop offset="1" stop-color="#f97316"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 4 L56 14 V30 C56 46 45 56 32 60 C19 56 8 46 8 30 V14 Z"
+              fill="rgba(255,255,255,.16)" stroke="#fff" stroke-width="2.5"/>
+        <path d="M32 22 C38 30 40 33 36 40 C34 44 38 47 32 48 C26 47 30 43 28 39 C24 33 26 26 32 22 Z"
+              fill="url(#flame)"/>
+      </svg>
+      <div class="hero-text">
+        <h1>普天消防工具箱</h1>
+        <p>消防安全 · 效率工具集</p>
+      </div>
+      <div class="clock" id="clock" aria-live="off">
+        <div class="date" id="clkDate">——</div>
+        <div class="time" id="clkTime">--:--:--</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="section-head">
+      <h2>工具列表</h2>
+      <span>点击卡片进入对应工具</span>
+    </div>
+    <div class="grid" id="grid"><!-- 工具卡片由脚本生成 --></div>
+  </main>
+
+  <footer>
+    <b>普天消防</b> · 工具箱持续扩充中，更多功能即将上线
+  </footer>
+
+<script>
+  /* =========================================================
+     工具清单 —— 以后要增加工具，只需在下面数组里加一项即可：
+     { name:'工具名', desc:'一句话说明', url:'链接地址', icon:'emoji', tag:'标签' }
+     ========================================================= */
+  const TOOLS = [
+    {
+      name: '合同管理',
+      desc: '合同在线查看、协作与管理，资料集中归档不丢失。',
+      url: 'https://www.kdocs.cn/wo/sl/v13qtoxt',
+      icon: '📄',
+      tag: '协作'
+    },
+    {
+      name: '自动出报告',
+      desc: '消防排查记录一键匹配、编辑并导出 Word 检查报告。',
+      url: 'report.html',
+      icon: '📋',
+      tag: '报告'
+    }
+  ];
+
+  /* 渲染卡片 */
+  const grid = document.getElementById('grid');
+  if (TOOLS.length === 0) {
+    grid.innerHTML = '<div class="empty-hint">暂无工具，敬请期待</div>';
+  } else {
+    grid.innerHTML = TOOLS.map(t => `
+      <article class="card">
+        <div class="card-top">
+          <div class="badge-ic">${t.icon}</div>
+          <div>
+            <h3>${t.name}</h3>
+            <span class="tag">${t.tag}</span>
+          </div>
+        </div>
+        <p>${t.desc}</p>
+        <a class="open" href="${t.url}" target="_blank" rel="noopener">打开工具</a>
+      </article>
+    `).join('');
+  }
+
+  /* 实时时钟 */
+  const DAYS = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  const pad = n => String(n).padStart(2, '0');
+  function tick() {
+    const d = new Date();
+    document.getElementById('clkDate').textContent =
+      `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${DAYS[d.getDay()]}`;
+    document.getElementById('clkTime').innerHTML =
+      `${pad(d.getHours())}<span class="dot">:</span>${pad(d.getMinutes())}<span class="dot">:</span>${pad(d.getSeconds())}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
