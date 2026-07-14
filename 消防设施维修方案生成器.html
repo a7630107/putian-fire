@@ -24,8 +24,14 @@
 
   /* ---------- 左侧导航 ---------- */
   .sidebar{width:230px;flex:0 0 230px;background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
-    color:#cbd5e1;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;}
-  .sidebar .brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08);}
+    color:#cbd5e1;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+    transition:width .3s ease, flex-basis .3s ease, opacity .25s ease;overflow:hidden;}
+  .sidebar.collapsed{width:0;flex:0 0 0;opacity:0;pointer-events:none;}
+  .sidebar .brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08);
+    display:flex;align-items:flex-start;justify-content:space-between;}
+  .sidebar .sb-toggle{background:none;border:none;color:#8aa0bd;cursor:pointer;font-size:18px;
+    padding:4px 6px;border-radius:6px;line-height:1;flex-shrink:0;margin-top:4px;transition:color .15s;}
+  .sidebar .sb-toggle:hover{color:#fff;background:rgba(255,255,255,.08);}
   .sidebar .logo{display:flex;align-items:center;gap:11px;}
   .sidebar .logo .mark{width:38px;height:38px;border-radius:11px;flex:0 0 auto;
     background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:20px;}
@@ -49,6 +55,11 @@
   .topbar p{margin:0;font-size:13px;color:var(--muted);}
   .topbar .crumb{margin-left:auto;font-size:12.5px;color:var(--muted);background:var(--surface-2);border:1px solid var(--border);
     padding:6px 13px;border-radius:999px;white-space:nowrap;}
+  /* 侧边栏展开按钮（侧栏隐藏时显示在顶栏） */
+  .sb-expand{display:none;background:none;border:1px solid var(--border);cursor:pointer;
+    font-size:16px;padding:6px 10px;border-radius:8px;color:var(--muted);transition:all .15s;flex-shrink:0;}
+  .sb-expand:hover{color:var(--text);background:var(--surface-2);border-color:#9ca3af;}
+  .sidebar.collapsed ~ .main .sb-expand{display:inline-flex;align-items:center;}
 
   /* ---------- 视图路由：每个导航对应一个全屏页 ---------- */
   .views{flex:1;min-height:0;display:flex;flex-direction:column;}
@@ -165,7 +176,11 @@
   /* ---------- 响应式 ---------- */
   @media (max-width: 920px){
     .app{flex-direction:column;}
-    .sidebar{width:100%;flex:none;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;align-items:center;}
+    .sidebar{width:100% !important;flex:none !important;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;align-items:center;
+      opacity:1 !important;pointer-events:auto !important;}
+    .sidebar.collapsed{display:flex;}
+    .sidebar .sb-toggle{display:none;}
+    .sb-expand{display:none !important;}
     .sidebar .brand{border-bottom:none;border-right:1px solid rgba(255,255,255,.08);}
     .sidebar .nav{display:flex;overflow-x:auto;padding:8px;}
     .sidebar .nav .group{display:none;}
@@ -191,7 +206,7 @@
 <body>
 <div class="app">
   <!-- 左侧导航 -->
-  <nav class="sidebar">
+  <nav class="sidebar" id="sidebar">
     <div class="brand">
       <div class="logo">
         <div class="mark">🛠️</div>
@@ -199,7 +214,7 @@
           <h1>维修方案生成器</h1>
         </div>
       </div>
-      <p>状元府消防设施</p>
+      <button class="sb-toggle" id="sbToggle" title="收起导航栏">◀</button>
     </div>
     <div class="nav">
       <div class="group">流程</div>
@@ -214,6 +229,7 @@
   <!-- 主区 -->
   <div class="main">
     <header class="topbar">
+      <button class="sb-expand" id="sbExpand" title="展开导航栏">☰ 导航</button>
       <h2>消防设施维修方案生成器</h2>
       <p>上传报告 → 大模型解析 → 可编辑方案表</p>
       <span class="crumb" id="crumb">① 数据源</span>
@@ -466,23 +482,52 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var wsXml = await zip.file("xl/worksheets/sheet1.xml").async("string");
     var doc = new DOMParser().parseFromString(wsXml, "text/xml");
     var rowNodes = doc.getElementsByTagNameNS("*", "row");
+
+    // ---- 检测表头：自动识别「名称」列与「单价」列 ----
+    var nameKeys = ["维修内容", "名称", "内容", "项目", "品名", "物料"];
+    var priceKeys = ["含税单价", "单价", "价格", "报价"];
+    function cellText(cell) {
+      if (!cell) return "";
+      var t = cell.getAttribute("t");
+      var vNode = cell.getElementsByTagNameNS("*", "v")[0];
+      if (!vNode) return "";
+      var v = vNode.textContent;
+      return (t === "s") ? (sst[parseInt(v, 10)] || "") : v;
+    }
+
+    // 从第一行读表头
+    var headerRow = rowNodes[0];
+    var hdrCells = headerRow ? headerRow.getElementsByTagNameNS("*", "c") : [];
+    var colNames = []; // {letter, text}
+    for (var hc = 0; hc < hdrCells.length; hc++) {
+      var hr = hdrCells[hc].getAttribute("r") || "";
+      colNames.push({ letter: hr.replace(/[0-9]/g, ""), text: cellText(hdrCells[hc]).trim() });
+    }
+    var nameColIdx = -1, priceColIdx = -1;
+    for (var ci = 0; ci < colNames.length; ci++) {
+      if (nameColIdx < 0 && nameKeys.indexOf(colNames[ci].text) >= 0) nameColIdx = ci;
+      if (priceColIdx < 0 && priceKeys.indexOf(colNames[ci].text) >= 0) priceColIdx = ci;
+    }
+    // 兜底：无表头时 A=名称 B=价格
+    if (nameColIdx < 0) nameColIdx = 0;
+    if (priceColIdx < 0) priceColIdx = Math.min(1, colNames.length - 1);
+    var nameLetter = colNames[nameColIdx] ? colNames[nameColIdx].letter : "A";
+    var priceLetter = colNames[priceColIdx] ? colNames[priceColIdx].letter : "B";
+    var dataStartRow = (headerRow && (nameColIdx > -1 || priceColIdx > -1)) ? 1 : 0;
+
+    // ---- 读取数据行 ----
     var cnt = 0;
-    for (var r = 0; r < rowNodes.length; r++) {
+    for (var r = dataStartRow; r < rowNodes.length; r++) {
       var cells = rowNodes[r].getElementsByTagNameNS("*", "c");
-      var name = null, colB = null;
+      var name = null, pVal = null;
       for (var c = 0; c < cells.length; c++) {
         var cell = cells[c];
-        var rAttr = cell.getAttribute("r") || "";
-        var col = rAttr.replace(/[0-9]/g, "");
-        var t = cell.getAttribute("t");
-        var vNode = cell.getElementsByTagNameNS("*", "v")[0];
-        if (!vNode) continue;
-        var v = vNode.textContent;
-        if (col === "A") { name = (t === "s") ? (sst[parseInt(v, 10)] || "") : v; }
-        if (col === "B") { colB = v; }
+        var cr = (cell.getAttribute("r") || "").replace(/[0-9]/g, "");
+        if (cr === nameLetter)   name = cellText(cell);
+        if (cr === priceLetter) pVal = cellText(cell);
       }
-      if (name != null && colB != null) {
-        var p = parseFloat(colB.replace(/[^0-9.\-]/g, ""));
+      if (name != null && pVal != null) {
+        var p = parseFloat(String(pVal).replace(/[^0-9.\-]/g, ""));
         if (name.trim() && !isNaN(p)) { priceMap.set(name.trim(), p); cnt++; }
       }
     }
@@ -569,7 +614,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     "你是一名资深消防维保工程师，负责把消防隐患排查报告整理成维修方案。",
     "重要规则：一条「排查内容 / 故障现象」往往对应多条「维修内容」，你必须自动将其展开为多行维修内容。",
     "例如「消火栓箱破损」应展开为「消火栓箱破损玻璃更换」与「消火栓箱变形门框校正/更换」；「消防主机故障」应展开为「消火栓按钮更换」「模块故障维修更换」等。",
-    "每条维修内容需给出：content(维修内容描述)、qty(工程量数值)、unit(单位，取值如 个/台/处/扇/块/项/只/组/套/根/米)、price(含税单价数值，若下方提供了价格库则尽量把维修内容匹配到价格库中的名称并给出单价，匹配不到则填 null)、remark(备注，可空)。",
+    "每条维修内容需给出：content(维修内容描述)、qty(工程量数值)、unit(单位，取值如 个/台/处/扇/块/项/只/组/套/根/米)、price(含税单价数值)、remark(备注，可空)。",
+    "【价格匹配规则】若下方提供了价格库，请尽量将维修内容匹配到价格库中的名称并给出其单价。只允许使用价格库中已有的原值；若库中无匹配项则 price 填 null，严禁编造或估算价格！",
     "只输出 JSON，不要任何解释。JSON 结构：{\"items\":[{\"problem\":\"排查内容/故障现象(原文简洁概括)\",\"repairs\":[{\"content\":\"\",\"qty\":0,\"unit\":\"\",\"price\":null,\"remark\":\"\"}]}]}"
   ].join("\n");
 
@@ -663,8 +709,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       try {
         var list = rows.map(function (r) { return (r.problem ? r.problem + " / " : "") + (r.content || ""); });
         var sys = "你是资深消防造价员。下面给定「价格库」（名称:含税单价）与「待匹配清单」（每行一条维修内容，前面带序号）。" +
-          "请为每条维修内容，从价格库中找出语义最匹配的项目，返回其含税单价；若确实无法匹配则返回 null。" +
-          "注意：维修内容与价格库名称措辞可能不同，请按实际维修对象与工艺判断（如「消火栓箱破损玻璃更换」应匹配「消火栓玻璃更换」）。" +
+          "请为每条维修内容，从价格库中找出语义最匹配的项目，返回其含税单价（必须是价格库中已有的数值）；若确实无法匹配则返回 null。" +
+          "【关键规则】严禁凭经验编造或估算价格！如果价格库中没有语义相近的条目，一律返回 null。只允许返回价格库中出现的原值。" +
+          "注意：维修内容与价格库名称措辞可能不同，请按实际维修对象与工艺判断（如「消火栓箱破损玻璃更换」应匹配「消火栓玻璃更换」，取其库中单价 80 元）。" +
           "只输出 JSON：{\"prices\":[{\"index\":0,\"price\":数值或null,\"match\":\"匹配到的价格库名称\"}]}，prices 数组顺序与输入清单一一对应。";
         var usr = "价格库：\n" + lib + "\n\n待匹配清单：\n" + list.map(function (c, i) { return (i + 1) + ". " + c; }).join("\n");
         var out = extractJSON(await callDeepSeek(sys, usr, true));
@@ -1207,6 +1254,26 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       a.classList.toggle("active", a.dataset.target === name);
     });
   }
+
+  // ---------- 侧边栏折叠/展开 ----------
+  (function () {
+    var sb = $("sidebar");
+    var tg = $("sbToggle");
+    var ex = $("sbExpand");
+    var KEY = "pt_sidebar_collapsed";
+    function apply(collapsed) {
+      sb.classList.toggle("collapsed", collapsed);
+      tg.textContent = collapsed ? "▶" : "◀";
+      tg.title = collapsed ? "展开导航栏" : "收起导航栏";
+      try { localStorage.setItem(KEY, collapsed ? "1" : "0"); } catch(e) {}
+    }
+    // 恢复上一次状态（默认展开）
+    var saved;
+    try { saved = localStorage.getItem(KEY); } catch(e) {}
+    apply(saved === "1");
+    tg.addEventListener("click", function () { apply(sb.classList.contains("collapsed") ? false : true); });
+    ex.addEventListener("click", function () { apply(false); });
+  })();
 
   // ---------- 绑定 ----------
   function bind() {
