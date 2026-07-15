@@ -40,6 +40,7 @@
       var(--c-bg);
     min-height: 100vh;
     line-height: 1.6;
+    padding-left: 258px;   /* 为固定侧栏让出空间 */
   }
 
   /* ===== 顶部英雄区 ===== */
@@ -95,24 +96,23 @@
     position: relative; z-index: 2;
   }
 
-  /* ---- 左侧导航栏（固定在最左侧） ---- */
+  /* ---- 左侧导航栏（固定在最左，从顶部到底部全高） ---- */
   .sidebar {
     position: fixed;
-    left: 12px;
-    top: calc(50% - 160px);   /* 大约在英雄区下方 */
-    width: 252px;
-    z-index: 10;
-    background: linear-gradient(160deg, var(--c-fire-700), var(--c-fire-500) 70%, var(--c-flame));
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 258px;
+    z-index: 20;
+    background: linear-gradient(180deg, var(--c-fire-700), var(--c-fire-500) 60%, var(--c-flame));
     color: #fff;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
-    padding: 18px 14px 22px;
-    max-height: calc(100vh - 72px);
+    box-shadow: 4px 0 24px rgba(185,28,28,.18);
+    padding: 20px 14px 24px;
     overflow-y: auto;
-    transition: left var(--ease), width var(--ease), padding var(--ease), opacity var(--ease);
+    transition: transform var(--ease);
   }
   .sidebar.collapsed {
-    left: -270px; width: 0; opacity: 0; overflow: hidden; padding: 0;
+    transform: translateX(-100%);
   }
   .sidebar-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -164,10 +164,10 @@
   .nav-item:hover { background: rgba(255,255,255,.16); color: #fff; }
   .nav-item .ni-ic { font-size: 16px; }
 
-  /* ---- 右侧主区（居中，留出左侧栏空间） ---- */
+  /* ---- 右侧主区（居中，body 已有 padding-left 避开侧栏） ---- */
   .wrap {
     max-width: 960px;
-    margin-left: 284px;   /* 252px侧栏 + 32px间距 */
+    margin: 0 auto;
     min-width: 0;
   }
   .menu-toggle {
@@ -253,17 +253,17 @@
   }
   footer b { color: var(--c-fire-600); }
 
-  /* 窄屏：侧栏变抽屉 */
+  /* 窄屏：侧栏变抽屉，body 恢复无左侧边距 */
   @media (max-width: 960px) {
-    .wrap { margin-left: 0; max-width: none; }
+    body { padding-left: 0; }
+    .wrap { max-width: none; }
     .sidebar {
-      left: -270px; top: 0; bottom: 0;
-      width: 260px; border-radius: 0; z-index: 50;
+      width: 260px;
+      transform: translateX(-100%);
       box-shadow: var(--shadow-lg);
-      transition: left var(--ease);
     }
-    .sidebar.collapsed { left: -270px; }
-    .sidebar:not(.collapsed) { left: 0 !important; }
+    .sidebar.collapsed { transform: translateX(-100%); }
+    .sidebar:not(.collapsed) { transform: translateX(0) !important; }
     .menu-toggle { position: sticky; top: 8px; z-index: 40; }
   }
   @media (max-width: 560px) {
