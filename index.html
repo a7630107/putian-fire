@@ -87,29 +87,32 @@
   .clock .dot { color: var(--c-fire-100); animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: .25; } }
 
-  /* ===== 布局：侧栏 + 主区 ===== */
+  /* ===== 布局：侧栏贴最左 + 主区居中 ===== */
   .layout {
-    display: flex; align-items: flex-start; gap: 24px;
-    max-width: 1200px; margin: -32px auto 0; padding: 0 24px 56px;
+    display: block;
+    margin: -32px auto 0;
+    padding: 0 24px 56px;
     position: relative; z-index: 2;
   }
 
-  /* ---- 左侧导航栏 ---- */
+  /* ---- 左侧导航栏（固定在最左侧） ---- */
   .sidebar {
-    position: sticky; top: 24px;
-    align-self: flex-start;
-    width: 264px; flex: 0 0 264px;
+    position: fixed;
+    left: 12px;
+    top: calc(50% - 160px);   /* 大约在英雄区下方 */
+    width: 252px;
+    z-index: 10;
     background: linear-gradient(160deg, var(--c-fire-700), var(--c-fire-500) 70%, var(--c-flame));
     color: #fff;
     border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    padding: 18px 16px 22px;
-    max-height: calc(100vh - 48px);
+    box-shadow: var(--shadow-lg);
+    padding: 18px 14px 22px;
+    max-height: calc(100vh - 72px);
     overflow-y: auto;
-    transition: margin-left var(--ease), width var(--ease), flex-basis var(--ease), opacity var(--ease);
+    transition: left var(--ease), width var(--ease), padding var(--ease), opacity var(--ease);
   }
   .sidebar.collapsed {
-    width: 0; flex-basis: 0; margin-left: -264px; opacity: 0; overflow: hidden; padding: 0;
+    left: -270px; width: 0; opacity: 0; overflow: hidden; padding: 0;
   }
   .sidebar-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -161,8 +164,12 @@
   .nav-item:hover { background: rgba(255,255,255,.16); color: #fff; }
   .nav-item .ni-ic { font-size: 16px; }
 
-  /* ---- 右侧主区 ---- */
-  .wrap { flex: 1; min-width: 0; }
+  /* ---- 右侧主区（居中，留出左侧栏空间） ---- */
+  .wrap {
+    max-width: 960px;
+    margin-left: 284px;   /* 252px侧栏 + 32px间距 */
+    min-width: 0;
+  }
   .menu-toggle {
     display: inline-flex; align-items: center; gap: 6px;
     background: linear-gradient(135deg, var(--c-fire-600), var(--c-flame));
@@ -247,21 +254,17 @@
   footer b { color: var(--c-fire-600); }
 
   /* 窄屏：侧栏变抽屉 */
-  @media (max-width: 820px) {
-    .layout { display: block; padding: 0 16px 56px; }
+  @media (max-width: 960px) {
+    .wrap { margin-left: 0; max-width: none; }
     .sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
-      width: 264px; flex: none; margin: 0; border-radius: 0;
-      max-height: 100vh; padding: 18px 16px;
-      transform: translateX(0); transition: transform var(--ease);
+      left: -270px; top: 0; bottom: 0;
+      width: 260px; border-radius: 0; z-index: 50;
       box-shadow: var(--shadow-lg);
+      transition: left var(--ease);
     }
-    .sidebar.collapsed {
-      width: 264px; flex: none; margin: 0; opacity: 1; padding: 18px 16px;
-      transform: translateX(-100%);
-    }
+    .sidebar.collapsed { left: -270px; }
+    .sidebar:not(.collapsed) { left: 0 !important; }
     .menu-toggle { position: sticky; top: 8px; z-index: 40; }
-    .wrap { margin-top: 0; }
   }
   @media (max-width: 560px) {
     .hero-text h1 { font-size: 24px; }
