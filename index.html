@@ -59,7 +59,7 @@
   }
   .hero-inner {
     position: relative; z-index:1;
-    max-width: 1040px; margin: 0 auto;
+    max-width: 1200px; margin: 0 auto;
     display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
   }
   .logo {
@@ -87,10 +87,94 @@
   .clock .dot { color: var(--c-fire-100); animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: .25; } }
 
-  /* ===== 主体 ===== */
-  .wrap { max-width: 1040px; margin: -32px auto 0; padding: 0 24px 56px; position: relative; z-index: 2; }
+  /* ===== 布局：侧栏 + 主区 ===== */
+  .layout {
+    display: flex; align-items: flex-start; gap: 24px;
+    max-width: 1200px; margin: -32px auto 0; padding: 0 24px 56px;
+    position: relative; z-index: 2;
+  }
+
+  /* ---- 左侧导航栏 ---- */
+  .sidebar {
+    position: sticky; top: 24px;
+    align-self: flex-start;
+    width: 264px; flex: 0 0 264px;
+    background: linear-gradient(160deg, var(--c-fire-700), var(--c-fire-500) 70%, var(--c-flame));
+    color: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 18px 16px 22px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    transition: margin-left var(--ease), width var(--ease), flex-basis var(--ease), opacity var(--ease);
+  }
+  .sidebar.collapsed {
+    width: 0; flex-basis: 0; margin-left: -264px; opacity: 0; overflow: hidden; padding: 0;
+  }
+  .sidebar-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 6px 14px; margin-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,.22);
+  }
+  .sb-title { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+  .sb-collapse {
+    border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.12);
+    color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; line-height: 1; transition: background var(--ease);
+  }
+  .sb-collapse:hover { background: rgba(255,255,255,.26); }
+
+  .nav-group { margin-bottom: 6px; }
+  .nav-group-head {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+    color: #fff; text-align: left; cursor: pointer;
+    padding: 11px 12px; border-radius: 12px; font-size: 15px; font-weight: 600;
+    transition: background var(--ease), border-color var(--ease);
+  }
+  .nav-group-head:hover { background: rgba(255,255,255,.18); }
+  .nav-group-head.active {
+    background: rgba(255,255,255,.95); color: var(--c-fire-700);
+    border-color: #fff; box-shadow: var(--shadow-sm);
+  }
+  .ng-ic { font-size: 18px; }
+  .ng-name { flex: 1; }
+  .ng-count {
+    font-size: 12px; background: rgba(0,0,0,.18); color: #fff;
+    padding: 1px 8px; border-radius: 999px;
+  }
+  .nav-group-head.active .ng-count { background: var(--c-fire-100); color: var(--c-fire-700); }
+  .ng-arrow { transition: transform var(--ease); font-size: 12px; opacity: .85; }
+  .nav-group-head.open .ng-arrow { transform: rotate(180deg); }
+
+  .nav-items {
+    max-height: 0; overflow: hidden;
+    transition: max-height var(--ease);
+    padding-left: 8px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    text-decoration: none; color: rgba(255,255,255,.92);
+    padding: 9px 12px; margin: 4px 0; border-radius: 10px; font-size: 14px;
+    transition: background var(--ease), color var(--ease);
+  }
+  .nav-item:hover { background: rgba(255,255,255,.16); color: #fff; }
+  .nav-item .ni-ic { font-size: 16px; }
+
+  /* ---- 右侧主区 ---- */
+  .wrap { flex: 1; min-width: 0; }
+  .menu-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, var(--c-fire-600), var(--c-flame));
+    color: #fff; border: none; cursor: pointer;
+    padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    box-shadow: var(--shadow-sm); margin-bottom: 14px;
+    transition: transform var(--ease), box-shadow var(--ease);
+  }
+  .menu-toggle:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
   .section-head {
-    display:flex; align-items: baseline; gap: 12px; margin: 8px 4px 20px;
+    display:flex; align-items: baseline; gap: 12px; margin: 0 4px 20px;
   }
   .section-head h2 { font-size: 19px; font-weight: 700; color: var(--c-fire-700); }
   .section-head span { font-size: 13px; color: var(--c-ink-soft); }
@@ -162,6 +246,23 @@
   }
   footer b { color: var(--c-fire-600); }
 
+  /* 窄屏：侧栏变抽屉 */
+  @media (max-width: 820px) {
+    .layout { display: block; padding: 0 16px 56px; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+      width: 264px; flex: none; margin: 0; border-radius: 0;
+      max-height: 100vh; padding: 18px 16px;
+      transform: translateX(0); transition: transform var(--ease);
+      box-shadow: var(--shadow-lg);
+    }
+    .sidebar.collapsed {
+      width: 264px; flex: none; margin: 0; opacity: 1; padding: 18px 16px;
+      transform: translateX(-100%);
+    }
+    .menu-toggle { position: sticky; top: 8px; z-index: 40; }
+    .wrap { margin-top: 0; }
+  }
   @media (max-width: 560px) {
     .hero-text h1 { font-size: 24px; }
     .clock { margin-left: 0; width: 100%; text-align: left; }
@@ -197,13 +298,26 @@
     </div>
   </header>
 
-  <main class="wrap">
-    <div class="section-head">
-      <h2>工具列表</h2>
-      <span>点击卡片进入对应工具</span>
-    </div>
-    <div class="grid" id="grid"><!-- 工具卡片由脚本生成 --></div>
-  </main>
+  <div class="layout">
+    <!-- ===== 左侧导航栏 ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <span class="sb-title">工具导航</span>
+        <button class="sb-collapse" id="sbCollapse" title="折叠/展开导航栏">«</button>
+      </div>
+      <nav class="nav" id="nav"><!-- 分组由脚本生成 --></nav>
+    </aside>
+
+    <!-- ===== 右侧主区 ===== -->
+    <main class="wrap" id="main">
+      <button class="menu-toggle" id="menuToggle" title="显示/隐藏导航栏">☰ 导航</button>
+      <div class="section-head">
+        <h2 id="groupTitle">效率工具</h2>
+        <span id="groupSub">点击卡片进入对应工具</span>
+      </div>
+      <div class="grid" id="grid"><!-- 工具卡片由脚本生成 --></div>
+    </main>
+  </div>
 
   <footer>
     <b>普天消防</b> · 工具箱持续扩充中，更多功能即将上线
@@ -211,46 +325,82 @@
 
 <script>
   /* =========================================================
-     工具清单 —— 以后要增加工具，只需在下面数组里加一项即可：
-     { name:'工具名', desc:'一句话说明', url:'链接地址', icon:'emoji', tag:'标签' }
+     分组与工具清单
+     —— 以后要增加工具：在对应分组的 tools 数组里加一项即可：
+        { name:'工具名', desc:'一句话说明', url:'链接地址', icon:'emoji', tag:'标签' }
+     —— 要新增一个专栏：在 GROUPS 数组里加一个分组对象即可。
      ========================================================= */
-  const TOOLS = [
+  const GROUPS = [
     {
-      name: '合同管理',
-      desc: '合同在线查看、协作与管理，资料集中归档不丢失。',
-      url: 'https://www.kdocs.cn/wo/sl/v13qtoxt',
-      icon: '📄',
-      tag: '协作'
+      name: '效率工具',
+      icon: '⚡',
+      tools: [
+        {
+          name: '合同管理',
+          desc: '合同在线查看、协作与管理，资料集中归档不丢失。',
+          url: 'https://www.kdocs.cn/wo/sl/v13qtoxt',
+          icon: '📄',
+          tag: '协作'
+        },
+        {
+          name: '自动出报告',
+          desc: '消防排查记录一键匹配、编辑并导出 Word 检查报告。',
+          url: 'report.html',
+          icon: '📋',
+          tag: '报告'
+        },
+        {
+          name: '消防维修单价数据库',
+          desc: '消防维修项目单价查询与参考，快速核对报价与成本。',
+          url: 'https://www.kdocs.cn/l/cbzX1CKtlKBA',
+          icon: '💰',
+          tag: '数据库'
+        },
+        {
+          name: '自动生成方案及报价',
+          desc: '消防排查问题一键生成维修方案与 Excel 报价单，支持单价大模型匹配。',
+          url: '消防设施维修方案生成器.html',
+          icon: '🧾',
+          tag: '方案报价'
+        }
+      ]
     },
     {
-      name: '自动出报告',
-      desc: '消防排查记录一键匹配、编辑并导出 Word 检查报告。',
-      url: 'report.html',
-      icon: '📋',
-      tag: '报告'
-    },
-    {
-      name: '消防维修单价数据库',
-      desc: '消防维修项目单价查询与参考，快速核对报价与成本。',
-      url: 'https://www.kdocs.cn/l/cbzX1CKtlKBA',
-      icon: '💰',
-      tag: '数据库'
-    },
-    {
-      name: '自动生成方案及报价',
-      desc: '消防排查问题一键生成维修方案与 Excel 报价单，支持单价大模型匹配。',
-      url: '消防设施维修方案生成器.html',
-      icon: '🧾',
-      tag: '方案报价'
+      name: '造价工具',
+      icon: '🧮',
+      tools: [
+        /* 造价工具专栏筹建中，后续在此数组添加工具即可 */
+      ]
     }
   ];
 
-  /* 渲染卡片 */
+  /* ---------- 渲染左侧导航 ---------- */
+  const nav = document.getElementById('nav');
+  nav.innerHTML = GROUPS.map((g, gi) => `
+    <div class="nav-group">
+      <button class="nav-group-head" data-toggle="${gi}">
+        <span class="ng-ic">${g.icon}</span>
+        <span class="ng-name">${g.name}</span>
+        <span class="ng-count">${g.tools.length}</span>
+        <span class="ng-arrow">▾</span>
+      </button>
+      <div class="nav-items" id="navItems-${gi}">
+        ${g.tools.map((t, ti) => `
+          <a class="nav-item" data-g="${gi}" data-t="${ti}" href="${t.url}" target="_blank" rel="noopener">
+            <span class="ni-ic">${t.icon}</span><span>${t.name}</span>
+          </a>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  /* ---------- 渲染右侧卡片 ---------- */
   const grid = document.getElementById('grid');
-  if (TOOLS.length === 0) {
-    grid.innerHTML = '<div class="empty-hint">暂无工具，敬请期待</div>';
-  } else {
-    grid.innerHTML = TOOLS.map(t => `
+  const groupTitle = document.getElementById('groupTitle');
+  const groupSub = document.getElementById('groupSub');
+
+  function cardHTML(t) {
+    return `
       <article class="card">
         <div class="card-top">
           <div class="badge-ic">${t.icon}</div>
@@ -261,11 +411,71 @@
         </div>
         <p>${t.desc}</p>
         <a class="open" href="${t.url}" target="_blank" rel="noopener">打开工具</a>
-      </article>
-    `).join('');
+      </article>`;
   }
 
-  /* 实时时钟 */
+  function renderGroup(gi) {
+    const g = GROUPS[gi];
+    groupTitle.textContent = g.name;
+    groupSub.textContent = '点击卡片进入对应工具';
+    if (g.tools.length === 0) {
+      grid.innerHTML = `<div class="empty-hint">「${g.name}」专栏正在筹建中，敬请期待 🚧</div>`;
+    } else {
+      grid.innerHTML = g.tools.map(cardHTML).join('');
+    }
+    document.querySelectorAll('.nav-group-head').forEach((el, i) => {
+      el.classList.toggle('active', i === gi);
+    });
+  }
+
+  /* ---------- 展开/折叠某个分组 ---------- */
+  function setExpanded(gi, expanded) {
+    const items = document.getElementById('navItems-' + gi);
+    const head = document.querySelector('.nav-group-head[data-toggle="' + gi + '"]');
+    if (expanded) {
+      items.style.maxHeight = items.scrollHeight + 'px';
+      head.classList.add('open');
+    } else {
+      items.style.maxHeight = '0px';
+      head.classList.remove('open');
+    }
+  }
+
+  /* ---------- 交互绑定 ---------- */
+  document.querySelectorAll('.nav-group-head').forEach(head => {
+    head.addEventListener('click', () => {
+      const gi = +head.dataset.toggle;
+      renderGroup(gi);                       // 右侧切换到该专栏
+      const isOpen = head.classList.contains('open');
+      GROUPS.forEach((_, i) => setExpanded(i, false)); // 折叠其它
+      if (!isOpen) setExpanded(gi, true);    // 展开当前
+    });
+  });
+
+  // 点击子项：确保右侧显示所在专栏（若不同则切换），并展开该组
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      const gi = +item.dataset.g;
+      const active = document.querySelector('.nav-group-head.active');
+      if (!active || +active.dataset.toggle !== gi) {
+        renderGroup(gi);
+      }
+      GROUPS.forEach((_, i) => setExpanded(i, i === gi));
+    });
+  });
+
+  // 侧栏整体折叠/展开
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+  document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
+  document.getElementById('sbCollapse').addEventListener('click', toggleSidebar);
+
+  /* ---------- 初始化：默认展开并显示第一组 ---------- */
+  renderGroup(0);
+  GROUPS.forEach((_, i) => setExpanded(i, i === 0));
+
+  /* ---------- 实时时钟 ---------- */
   const DAYS = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
   const pad = n => String(n).padStart(2, '0');
   function tick() {
