@@ -41,6 +41,10 @@
     min-height: 100vh;
     line-height: 1.6;
     padding-left: 258px;   /* 为固定侧栏让出空间 */
+    transition: padding-left var(--ease);
+  }
+  body.sb-collapsed {
+    padding-left: 0;
   }
 
   /* ===== 顶部英雄区 ===== */
@@ -480,9 +484,11 @@
     });
   });
 
-  // 侧栏整体折叠/展开
+  // 侧栏整体折叠/展开（同步切换 body class 以去掉左侧留白）
   function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('collapsed');
+    const sb = document.getElementById('sidebar');
+    sb.classList.toggle('collapsed');
+    document.body.classList.toggle('sb-collapsed', sb.classList.contains('collapsed'));
   }
   document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
   document.getElementById('sbCollapse').addEventListener('click', toggleSidebar);
